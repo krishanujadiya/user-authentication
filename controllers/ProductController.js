@@ -31,7 +31,7 @@ exports.update_products = async (req, res) => {
   const { name, description, price } = req.body;
 
   // Update the product in the database
-  Product.findOneAndUpdate( productId, { name, description, price }, { new: true }) 
+  Product.findOneAndUpdate( {_id: productId}, { name, description, price }, { new: true }) 
   .then(product => {
     res.json({ message: 'Product updated' })
   });
