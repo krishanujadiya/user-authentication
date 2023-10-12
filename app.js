@@ -6,6 +6,7 @@ var logger = require('morgan');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
+const verifyToken = require('./middleware/authenticate');
 
 require('dotenv').config()
 
@@ -14,7 +15,6 @@ const mongoose = require('mongoose')
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var productRouter = require('./routes/product');
 
 var app = express();
 
@@ -22,19 +22,6 @@ var app = express();
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jsx');
 app.engine('jsx', require('express-react-views').createEngine());
-
-// // JWT token verification middleware
-function verifyToken(req, res, next) {
-  const token = req.header('Authorization');
-  if (!token) return res.status(401).json({ error: 'Access denied' });
-  jwt.verify(token, 'secretKey', (err, decoded) => {
-    if (err) {
-    return res.status(401).json({ error: 'Invalid token' });
-    }
-    req.userId = decoded._id;
-    next();
-  });
-}
 
 // Protected routes
 app.use(logger('dev'));
@@ -44,8 +31,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/', verifyToken, productRouter);
+app.use('/users', verifyToken, usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
